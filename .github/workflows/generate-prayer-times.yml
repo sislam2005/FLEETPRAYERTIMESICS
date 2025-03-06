@@ -1,0 +1,45 @@
+name: Generate Prayer Times ICS
+
+# This workflow runs on a schedule or can be triggered manually
+on:
+  # Trigger the workflow manually
+  workflow_dispatch:
+  # Trigger the workflow automatically on January 1st, at midnight UTC (for example)
+  schedule:
+    - cron: '0 0 1 1 *'  # Runs every year on January 1st at midnight UTC
+
+jobs:
+  generate-ics:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu environment
+
+    steps:
+      # Step 1: Checkout the code from your repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Python 3.9
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9  # You can adjust the Python version if needed
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # Step 4: Run the Python script to generate ICS
+      - name: Run prayer times script
+        run: |
+          python generate_prayer_times.py  # Ensure this matches your script name
+
+      # Step 5: Commit and push the generated ICS file
+      - name: Commit and push generated ICS file
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add prayer_times_${{ github.event.repository.name }}.ics  # Adjust file name as needed
+          git commit -m "Add prayer times for ${{ github.event.repository.name }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # This automatically uses the GitHub token for authentication
